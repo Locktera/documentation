@@ -1,0 +1,1522 @@
+openapi: 3.1.0
+info:
+
+  title: Locktera API v1
+  description: |-
+    The Locktera API provides endpoints for managing organizational data, 
+    user access, DRM configurations, and resource usage. This API is 
+    intended for system administrators and developers, offering functionalities 
+    to manage storage, access permissions, audit logs, and compliance settings 
+    within an organization.
+    
+    **This API requires**:
+    - `Node.js 14.x+`
+    
+    - `Python 3.6+`
+
+    **Key Features**:
+    
+    - `Organizational and container management`
+
+    - `Consent and API key administration`
+
+    - `DRM rule configuration for secure access control`
+
+    - `Comprehensive audit logging and error tracking`
+
+    - `Resource limits and usage metrics`
+  version: 1.0.0.j
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Servers Configuration
+# ────────────────────────────────────────────────────────────────────────────────
+
+servers:
+  - url: https://localhost/api/v1
+  - url: https://dev.locktera.com/api/v1
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Tags for API Organization
+# ────────────────────────────────────────────────────────────────────────────────
+
+tags:
+  - name: org
+    description: A member of the user hierarchy. In top of hierarchy is the Root Organization, followed by  Groups (sub-organization), followed by Users (sub-organization)
+  - name: address
+    description: An address book entry (record) including, email address, name, company ,and phone number
+  - name: events
+    description: Events related to the container
+  - name: storage
+    description: Organization storage configuration for the 3 available options, Azure, BYOS, S3 bucket
+  - name: container
+    description: A tera file (container) in the Organization library
+  - name: consent
+    description: User and viewer consent record
+  - name: drmContext
+    description: Container DRM record
+  - name: error
+    description: Record of error event
+  - name: api key
+    description: Manages the creation, retrieval, and deletion of API keys
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Paths - Define Endpoints
+# ────────────────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Organization Management Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}:
+    get:
+      tags: [org]
+      summary: Retrieve organization information
+      description: |-
+        Retrieves detailed information for the specified organization.
+        The response includes:
+          - `id`: Unique identifier for the organization
+          - `root_org_id`: ID of the root organization in the hierarchy
+          - `parent_org_id`: ID of the parent organization, if applicable
+          - `org_name`: Name associated with the organization
+          - `role`: Role of the organization (e.g., org, group, org_admin, user_admin, user)
+          - `contact`: Contact information including email and phone details.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Organization details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Org'
+
+    delete:
+      tags: [org]
+      summary: Delete organization
+      description: |-
+        Deletes the specified organization and all associated data within the 
+        organizational hierarchy. Ensure this operation is performed only when 
+        removal of the organization and its related entities is required.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '204':
+          description: Organization deleted successfully
+
+    patch:
+      tags: [org]
+      summary: Update organization details
+      description: |-
+        Updates information for the specified organization, such as `name`, 
+        `contact details`, and `hierarchy-related details`.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Org'
+      responses:
+        '200':
+          description: Organization details updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Org'
+
+  /orgs/import_orgs:
+    post:
+      tags: [org]
+      summary: Import organization users via CSV
+      description: Upload a CSV file to bulk import users into the organization. The CSV should include headers such as `id`, `name`, `email`, `org_id`, and `role`.
+      requestBody:
+        content:
+          text/csv:
+            schema:
+              type: string
+              description: CSV format for importing users
+              examples:
+                - "id,name,email,org_id,role\n123,John Doe,john.doe@example.com,org-001,member\n456,Jane Smith,jane.smith@example.com,org-002,admin"
+
+      responses:
+        '204':
+          description: Users imported successfully
+
+
+  /orgs/{org_id}/children:
+    post:
+      tags: [org]
+      summary: Provision organization with a new user
+      description: |-
+        Adds a new user under the specified organization, extending the 
+        organization’s hierarchy. This endpoint is used for provisioning users 
+        within existing organizations.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '204':
+          description: User provisioned successfully within organization
+
+  /org:
+    get:
+      tags: [org]
+      summary: Retrieve organization information
+      description: Retrieves high-level information about the current organization, such as `name`, `role`, and `contact details`.
+      responses:
+        200:
+          description: Organization information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Org'
+
+  /orgs/{org_id}/access_log:
+    get:
+      tags: [org]
+      summary: Retrieve access log
+      description: Provides a record of access attempts for the specified organization, useful for monitoring and auditing access patterns.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Access log retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessLog'
+
+  /orgs/{org_id}/api_keys:
+    get:
+      tags: [org,api key]
+      summary: Retrieve API keys
+      description: Retrieves a list of all API keys associated with the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: API keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiKey'
+
+    post:
+      tags: [org, api key]
+      summary: Create a new API key
+      description: Generates a new API key for the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKey'
+      responses:
+        201:
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+
+  /orgs/{org_id}/api_keys/{key_id}:
+    delete:
+      tags: [org, api key]
+      summary: Delete an API key
+      description: Deletes the specified API key associated with the organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the API key to delete
+      responses:
+        204:
+          description: API key deleted successfully
+
+
+  /orgs/{org_id}/children_audit:
+    get:
+      tags: [org]
+      summary: Retrieve children audit log
+      description: Retrieves the audit log for all sub-organizations `(children)` under the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Children audit log retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+
+  /orgs/{org_id}/consumption:
+    get:
+      tags: [org]
+      summary: Retrieve monthly consumption
+      description: Retrieves monthly resource consumption data, including storage and API call usage, for the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Monthly consumption data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consumption'
+
+  /orgs/{org_id}/customizations:
+    get:
+      tags: [org]
+      summary: Retrieve organization customizations
+      description: Fetches customization settings for the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Organization customizations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customization'
+
+    put:
+      tags: [org]
+      summary: Update organization customizations
+      description: Updates customization settings for the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customization'
+      responses:
+        200:
+          description: Organization customizations updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customization'
+
+  /orgs/{org_id}/tags:
+    get:
+      tags: [org]
+      summary: Retrieve organization tags
+      description: Fetches all tags associated with the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Organization tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Address Book Management Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/addresses:
+    get:
+      tags: [address]
+      summary: Retrieve list of organization addresses
+      description: Fetches a list of all address book entries associated with the specified organization, including `email`, `name`, and `company details`.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: List of addresses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+
+  /orgs/{org_id}/addresses/{email}:
+    delete:
+      tags: [address]
+      summary: Delete address entry
+      description: |-
+        Deletes an entry from the organization's address book based on the 
+        provided email address. All associated details such as `name`, `phone`, 
+        and `company` are removed.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/email'
+      responses:
+        '204':
+          description: Address entry deleted successfully
+
+    put:
+      tags: [address]
+      summary: Create or update address entry
+      description: |-
+        Creates or updates an address entry in the organization's address book.
+        Details that can be included:
+          - `email`: Email address for the entry
+          - `first_name`: First name of the contact
+          - `last_name`: Last name of the contact
+          - `company`: Associated company name
+          - `mobile_phone`: Contact's mobile phone number.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/email'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+
+      responses:
+        '200':
+          description: Address entry created or updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+
+
+  /orgs/{org_id}/addresses_audit:
+    get:
+      tags: [address]
+      summary: Retrieve address audit logs
+      description: |-
+        Retrieves audit logs for a specific address entry within the organization.
+        The log details include:
+          - `action`: Type of action performed (insert/update/delete)
+          - `org_id`: Organization ID
+          - `address_id`: Unique identifier for the address entry
+          - `admin_id`: Administrator ID (if change was made by an admin)
+          - `timestamp`: Date and time of the action
+          - `old_data`: Address details before the change
+          - `new_data`: Address details after the change
+          - `ip`: IP address from where the change was made.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Address audit logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Events Management Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+  /orgs/{org_id}/events:
+    get:
+      tags: [events]
+      summary: Retrieve events for a specific organization
+      description: Retrieve a list of events for the specified organization, with optional date range filters.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/start'
+        - $ref: '#/components/parameters/end'
+      responses:
+        '200':
+          description: List of events within the specified date range (if provided)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+
+  /orgs/{org_id}/container_events/by_access:
+    get:
+      tags: [events]
+      summary: Retrieve container events by access
+      description: |-
+        Fetches container events for the specified organization, filtered by 
+        access type. Useful for auditing access patterns on containers.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Access-based container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Events'
+
+  /orgs/{org_id}/container_events/by_block:
+    get:
+      tags: [events]
+      summary: Retrieve container events by block
+      description: |-
+        Retrieves container events for the specified organization, specifically 
+        those events related to blocked access attempts.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Block-based container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Events'
+
+  /orgs/{org_id}/container_events/by_create:
+    get:
+      tags: [events]
+      summary: Retrieve container events by `creation date`
+      description: Returns events for containers, filtered by their creation date.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Container events by creation date retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /orgs/{org_id}/container_events/by_expire:
+    get:
+      tags: [events]
+      summary: Retrieve container events by `expiration date`
+      description: Returns events related to containers that are set to expire, which can be useful for data lifecycle management.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Container events by expiration date retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /orgs/{org_id}/container_events/by_fail:
+    get:
+      tags: [events]
+      summary: Retrieve failed container events
+      description: Retrieves all events associated with failed container actions within the specified organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        200:
+          description: Failed container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Container Management - Endpoints for Managing and Accessing Containers
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/containers/{container_id}:
+    get:
+      tags: [container]
+      summary: Retrieve a specific container record
+      description: Retrieves details of a specified container by its unique container_id.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '200':
+          description: Container record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Container'
+    delete:
+      tags: [container]
+      summary: Delete a specific container record
+      description: Deletes a specified container by its unique container_id.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '204':
+          description: Container deleted successfully
+
+  /orgs/{org_id}/containers:
+    get:
+      tags: [container]
+      summary: Retrieve all containers for the organization
+      description: Retrieves a list of all containers associated with a specific organization.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: List of containers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Container'
+
+  /orgs/{org_id}/containers/{container_id}/block:
+    put:
+      tags: [container]
+      summary: Block access to a specific container
+      description: Blocks a container, preventing viewing or downloading access.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '204':
+          description: Container access blocked successfully
+    delete:
+      tags: [container]
+      summary: Unblock access to a specific container
+      description: Unblocks a previously blocked container, restoring access for viewing or downloading.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '204':
+          description: Container access unblocked successfully
+
+  /orgs/{org_id}/containers/{container_id}/attempts:
+    get:
+      tags: [container]
+      summary: Retrieve container access attempts
+      description: Lists all access attempts to a specified container, including `viewer email` and `number of attempts`.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '200':
+          description: Access attempts for container retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    viewer_email:
+                      type: string
+                      description: Email address of the viewer who attempted access
+                    attempt_count:
+                      type: integer
+                      description: Number of access attempts by the viewer
+
+  /orgs/{org_id}/containers/{container_id}/tags_audit:
+    get:
+      tags: [container]
+      summary: Retrieve container tags audit
+      description: Fetches audit records for changes made to the tags associated with a specific container.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        '200':
+          description: Tags audit records for container retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                      description: Date and time of the tag modification
+                    old_tags:
+                      type: array
+                      items:
+                        type: string
+                      description: List of tags before the modification
+                    new_tags:
+                      type: array
+                      items:
+                        type: string
+                      description: List of tags after the modification
+
+  /orgs/{org_id}/pq_keys:
+    get:
+      tags: [container]
+      summary: Retrieve post-quantum keys for the organization
+      description: Retrieves post-quantum keys `(pq_keys)` for the organization to validate container security.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Post-quantum keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PqKey'
+
+  /orgs/{org_id}/container_by_digest:
+    get:
+      tags: [container]
+      summary: Retrieve container by digest
+      description: Retrieves a container by its unique digest `(checksum)`, useful for validating container integrity.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Container found by digest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Container'
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Container Management - Container DRM Rules
+    # ──────────────────────────────────────────────────────────────────────────────
+
+
+  /orgs/{org_id}/containers/{container_id}/drm_rules:
+    get:
+      tags: [container, drmContext]
+      summary: Retrieve DRM rules
+      description: Fetches the DRM rules associated with the specified container.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        200:
+          description: DRM rules retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContainerDrm'
+
+    delete:
+      tags: [container, drmContext]
+      summary: Delete DRM rule
+      description: Deletes the DRM rule associated with the specified container.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        204:
+          description: DRM rule deleted successfully
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Container Management - Container Events Endpoint
+    # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/containers/{container_id}/events:
+    get:
+      tags: [container, events]
+
+      summary: Retrieve container events
+      description: Retrieves all events associated with the specified container.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      responses:
+        200:
+          description: Container events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Events'
+
+    post:
+      tags: [container, events]
+      summary: Create a container event
+      description: Logs a new event associated with the specified container.
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/container_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        201:
+          description: Container event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Storage Configuration Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/storage_config:
+    get:
+      tags: [storage]
+      summary: Retrieve storage configuration
+      description: |-
+        Retrieves the current storage configuration for the specified organization, 
+        including details for supported storage options like `Azure`, `BYOS`, or `S3`.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Storage configuration retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageConfig'
+
+    put:
+      tags: [storage]
+      summary: Update storage configuration
+      description: |-
+        Updates the storage configuration for the specified organization, allowing 
+        changes to the `storage type (e.g., Azure, BYOS, S3)` and relevant connection 
+        details such as `access keys` and `connection strings`.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorageConfig'
+      responses:
+        '200':
+          description: Storage configuration updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageConfig'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # DRM Context Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /drm_context:
+    get:
+      tags: [drmContext]
+      summary: Retrieve current DRM context
+      description: |-
+        Retrieves the current Digital Rights Management `(DRM)` context for the 
+        active request, providing details on the access environment. The DRM 
+        context includes:
+          - `timestamp`: Current server timestamp
+          - `ip`: IP address of the requester
+          - `geo`: Geolocation details of the requester, including country, subdivision, and city
+          - `viewer`: Email address of the viewer requesting the DRM context.
+
+      responses:
+        '200':
+          description: DRM context retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrmContext'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Consent Management Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/consents:
+    get:
+      tags: [consent]
+      summary: Retrieve consents at the organization level
+      description: |-
+        Retrieves all consent records for users within the specified organization.
+        Each consent record includes:
+          - `consent_id`: Unique identifier for the type of consent
+          - `timestamp`: Date and time when consent was provided or revoked
+          - `status`: Boolean indicating whether consent is granted (true) or revoked (false)
+          - `user`: User ID or email associated with the consent.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Organization consent records retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+
+  /viewers/{email}/consents:
+    get:
+      tags: [consent]
+      summary: Retrieve viewer consent status
+      description: |-
+        Retrieves the consent status `(true or false)` for a specific viewer 
+        identified by their email address. This is useful for determining if the 
+        viewer has provided authorization for access.
+
+      parameters:
+        - $ref: '#/components/parameters/email'
+      responses:
+        '200':
+          description: Viewer consent status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+
+  /orgs/{org_id}/consents/{consent_id}:
+    put:
+      tags: [consent]
+      summary: Update organization consent status
+      description: |-
+        Updates the consent status for a specified type of consent `(consent_id)` at 
+        the organization level. The update will reflect the latest timestamp and 
+        the boolean consent status `(true/false)`.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+        - $ref: '#/components/parameters/consent_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consent'
+      responses:
+        '200':
+          description: Organization consent status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+
+  /viewers/{email}/consents/{consent_id}:
+    put:
+      tags: [consent]
+      summary: Update viewer consent status
+      description: |-
+        Updates the consent status for a specified viewer based on their email and 
+        a specific consent type identifier `(consent_id)`. Provides a timestamp 
+        indicating when consent was granted or revoked.
+
+      parameters:
+        - $ref: '#/components/parameters/email'
+        - $ref: '#/components/parameters/consent_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consent'
+      responses:
+        '200':
+          description: Viewer consent status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Error Management Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  /orgs/{org_id}/errors:
+    get:
+      tags: [error]
+      summary: Retrieve organization error events
+      description: |-
+        Fetches a list of all error events logged for the specified organization. 
+        Each error record includes:
+          - `message`: A user-friendly description of the error
+          - `code`: Unique numeric code identifying the error
+          - `fields`: Detailed information on which fields caused the error, if applicable
+          - `timestamp`: Time at which the error occurred.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Organization error events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [error]
+      summary: Log a new error event for organization
+      description: |-
+        Logs a new error event in the specified organization's records. This endpoint 
+        is typically used for tracking application issues or reporting user-specific 
+        errors. The error entry includes:
+          - `message`: Descriptive message of the error
+          - `code`: Unique error code
+          - `fields`: Details about which fields encountered validation issues.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      responses:
+        '204':
+          description: Error event logged successfully
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Inactive Endpoints - Documented for Future Development
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  # Organization Statistics (Inactive)
+  /orgs/{org_id}/stats:
+    get:
+      tags: [events]
+      summary: "[INACTIVE] Retrieve organization statistics"
+      description: |-
+        Planned for future use. When active, this endpoint will provide 
+        statistical data for the specified organization, such as:
+          - `usage`: Resource usage metrics (e.g., storage, API calls)
+          - `events_count`: Total events recorded for the organization.
+
+      parameters:
+        - $ref: '#/components/parameters/org_id'
+      responses:
+        '200':
+          description: Organization statistics data (planned feature)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usage:
+                    type: number
+                    description: Resource usage metric (e.g., storage)
+                  events_count:
+                    type: number
+                    description: Total count of events recorded for the organization
+
+  # Service Status Update (Inactive)
+  /service_status:
+    get:
+      tags: [error]
+      summary: Retrieve Locktera service status
+      description: Provides the operational status of various Locktera services within the environment, including `API`, `Auth`, and `Storage`. Useful for monitoring system health and identifying issues.
+      responses:
+        200:
+          description: Service status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api:
+                    type: string
+                    description: Status of the API service (e.g., "up" or "down")
+                  auth:
+                    type: string
+                    description: Status of the Auth service
+                  storage:
+                    type: string
+                    description: Status of the Storage service
+              examples:
+                application/json:
+                  value:
+                    api: "up"
+                    auth: "up"
+                    storage: "down"
+
+
+  # Provision Organization (Inactive)
+  # Comment: This could potentially allow for direct provisioning of organizations if enabled.
+  /orgs:
+    post:
+      tags: [org]
+      summary: "[INACTIVE] Provision organization"
+      description: |-
+        Reserved for potential organization provisioning feature. This endpoint 
+        would allow for the creation of a new organization along with initial 
+        configuration details if enabled.
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Org'
+      responses:
+        '204':
+          description: New organization provisioned successfully (planned feature)
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Components - Define Schemas, Parameters, and Responses
+# ────────────────────────────────────────────────────────────────────────────────
+
+components:
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Schemas - Data Models for API Responses and Requests
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  schemas:
+
+    Org:
+      description: Organization schema
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the organization
+        root_org_id:
+          type: string
+          description: ID of the root organization in the hierarchy
+        parent_org_id:
+          type: string
+          description: ID of the parent organization (if applicable)
+        org_name:
+          type: string
+          description: Name associated with the organization
+        role:
+          type: string
+          description: Role of the organization (e.g., org, group, org_admin, user_admin, user)
+          enum:
+            - org
+            - group
+            - org_admin
+            - user_admin
+            - user
+        first_name:
+          type: string
+          description: First name of the organization contact
+        last_name:
+          type: string
+          description: Last name of the organization contact
+        email:
+          type: string
+          format: email
+          description: Contact email address for the organization
+        mobile_phone:
+          type: string
+          description: Mobile phone number for the organization contact
+
+    Address:
+      description: Address schema for address book entries.
+      type: object
+      required:
+        - email
+        - org_id
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the address entry
+        org_id:
+          type: string
+          description: ID of the organization associated with the address
+        email:
+          type: string
+          format: email
+          description: Email address for the address entry
+        first_name:
+          type: string
+          description: First name for the address entry
+        last_name:
+          type: string
+          description: Last name for the address entry
+        mobile_phone:
+          type: string
+          description: Mobile phone number for the address entry
+        company:
+          type: string
+          description: Company name associated with the address entry
+
+    Container:
+      description: Schema representing a container in the organization’s library
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the container
+        org_id:
+          type: string
+          description: Organization ID associated with the container
+        container_name:
+          type: string
+          description: Name of the container
+        container_digest:
+          type: string
+          description: MD5 hash value for container integrity validation
+        container_size:
+          type: number
+          description: Total size of the container (in bytes)
+        created_date:
+          type: string
+          format: date-time
+          description: Creation timestamp for the container
+
+    PqKey:
+      type: object
+      description: Schema for post-quantum keys, used for validating container security within an organization.
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the post-quantum key entry
+          examples:
+            - "b7c6d2f9-3d1f-4a3e-82d3-9f2c0b1d9b60"
+        org_id:
+          type: string
+          description: ID of the organization associated with the post-quantum key
+          examples:
+            - "7a92b400-4a8f-4f2a-bc4e-5f16d17b9c3f"
+        prv:
+          type: string
+          description: Private key component for post-quantum encryption (encoded string)
+          examples:
+            - "g9lB/2Q*catYZ|&$s=@PpGzWcM931-t3W+uGpl(O7.gTwr=7KDdFY7)?xD.d.6>!(X^n4HD{3ml?*G{zXfK9PfC0}p9@z+`"
+        pub:
+          type: string
+          description: Public key component used for post-quantum encryption (encoded string)
+          examples:
+            - "59Qz@UJuTS#1GY>qQKr;5=n[>GH624FK(Yp1$A2iv3}Kl[q:5[|5b_34*}pLdQ/4R[!#Hk(r#J!}r5GX!6<V.TY7xyrc"
+        _rid:
+          type: string
+          description: Unique resource ID for internal reference
+          examples:
+            - "3SKUEJMZ~pCAAAAAAAA=="
+        _self:
+          type: string
+          description: Self-referencing URI for the resource
+          examples:
+            - "dbs/3SKUEJMZ~p/colls/3SKUEJMZ~p/docs/3SKUEJMZ~pCAAAAAAAA==/"
+        _etag:
+          type: string
+          description: Entity tag for version control
+          examples:
+            - "\"5b1282f4-0000-0700-0000-643e2bca0000\""
+        attachments:
+          type: string
+          description: Path to any related attachments
+          examples:
+            - "attachments/"
+        _ts:
+          type: integer
+          description: UNIX timestamp of the last update to the resource
+          examples:
+            - 1682957123
+
+
+    DrmContext:
+      type: object
+      description: DRM schema capturing access context details
+      properties:
+        ts:
+          type: string
+          format: date-time
+          description: Current timestamp from the API server
+        ip:
+          type: string
+          format: ipv4
+          description: IP address (IPv4) of the current viewer
+        geo:
+          type: object
+          description: Geolocation data for the current viewer
+          properties:
+            country:
+              type: string
+              description: Country of the viewer
+            subdivision:
+              type: string
+              description: Region or subdivision of the viewer
+            city:
+              type: string
+              description: City of the viewer
+        viewer:
+          type: string
+          description: Email address of the current viewer
+
+    Error:
+      type: object
+      description: Schema for error responses and logging
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+        code:
+          type: integer
+          description: Unique error code for tracking
+        fields:
+          type: object
+          description: Object where each key is a field name, and each value describes the field's validation error
+          examples:
+            - description: Example of a validation error for email
+              value:
+                email: "Email address must contain an '@' symbol"
+            - description: Example of a validation error for password
+              value:
+                password: "Password must be at least 8 characters long"
+
+    Consent:
+      type: object
+      description: Schema for consent records
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the consent record
+        org_id:
+          type: string
+          description: Organization ID associated with the consent
+        email:
+          type: string
+          description: Email address associated with the consent record
+        consent_id:
+          type: string
+          description: Consent type identifier
+        consent_timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when consent was given or revoked
+        is_checked:
+          type: boolean
+          description: Consent status (true or false)
+
+    Events:
+      type: array
+      description: List of event objects for audit and tracking purposes
+      items:
+        $ref: '#/components/schemas/Event'
+
+    Event:
+      type: object
+      description: Schema for individual events related to container or organization actions
+      properties:
+        created_date:
+          type: string
+          format: date-time
+          description: Date and time when the event was created
+        action:
+          type: string
+          description: Type of action performed (e.g., container.create, object.load)
+        org_id:
+          type: string
+          description: ID of the organization associated with the event
+        container_id:
+          type: string
+          description: ID of the container associated with the event (if applicable)
+        user:
+          type: string
+          description: User ID of the individual who performed the action
+        detail:
+          type: object
+          description: Additional details about the event, such as page numbers or timestamps
+        creator_ip:
+          type: string
+          format: ipv4
+          description: IP address of the event creator
+
+    StorageConfig:
+      type: object
+      description: Schema for configuration details of organizational storage options
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the storage configuration
+        org_id:
+          type: string
+          description: ID of the organization associated with the storage
+        type:
+          type: string
+          enum:
+            - default
+            - azure
+            - s3
+          description: Type of storage (e.g., default, Azure, S3)
+        connection_string:
+          type: string
+          description: Connection string for storage access
+        bucket:
+          type: string
+          description: Storage bucket identifier (if applicable)
+        region:
+          type: string
+          description: Region of the storage service
+        host:
+          type: string
+          description: Host URL for the storage
+        access_key:
+          type: string
+          description: Access key for storage authentication
+        secret_key:
+          type: string
+          description: Secret key for storage authentication
+
+    AuditLog:
+      type: object
+      description: Schema for audit log entries, capturing changes and actions performed on resources.
+      properties:
+        action:
+          type: string
+          description: Type of action performed (e.g., insert, update, delete)
+        org_id:
+          type: string
+          description: Unique identifier for the organization where the action took place
+        address_id:
+          type: string
+          description: Unique identifier for the address entry affected by the action
+        admin_id:
+          type: string
+          description: ID of the admin who performed the action (if applicable)
+        timestamp:
+          type: string
+          format: date-time
+          description: Date and time the action was performed
+        old_data:
+          type: object
+          description: Data before the action was performed, containing the previous state
+        ip:
+          type: string
+          format: ipv4
+          description: IP address from which the action was performed
+
+    AccessLog:
+      type: object
+      description: Schema for access logs, tracking access events for an organization.
+      properties:
+        org_id:
+          type: string
+          description: ID of the organization where access was logged
+        timestamp:
+          type: string
+          format: date-time
+          description: Date and time of the access event
+        user:
+          type: string
+          description: ID of the user who accessed the organization
+        action:
+          type: string
+          description: Type of access action (e.g., "login", "logout", "data_view")
+        ip:
+          type: string
+          format: ipv4
+          description: IP address from which the access was made
+
+    ApiKey:
+      type: object
+      description: Schema representing an API key associated with an organization.
+      properties:
+        key_id:
+          type: string
+          description: Unique identifier for the API key
+        org_id:
+          type: string
+          description: ID of the organization associated with the API key
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp of API key creation
+        permissions:
+          type: array
+          items:
+            type: string
+          description: List of permissions granted by the API key
+
+    Consumption:
+      type: object
+      description: Schema representing monthly resource consumption for an organization.
+      properties:
+        org_id:
+          type: string
+          description: ID of the organization whose resource consumption is being reported
+        month:
+          type: string
+          description: Month for which the data is reported (e.g., "2024-09")
+        api_calls:
+          type: integer
+          description: Number of API calls made during the month
+        storage_used:
+          type: number
+          description: Total storage used by the organization (in GB)
+
+
+
+  # ──────────────────────────────────────────────────────────────────────────────
+  # Parameters - Reusable Parameters for Endpoints
+  # ──────────────────────────────────────────────────────────────────────────────
+
+  parameters:
+
+    org_id:
+      name: org_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for the organization
+
+    email:
+      name: email
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Email address associated with the resource
+
+    container_id:
+      name: container_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for the container
+
+    consent_id:
+      name: consent_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for the consent record
+
+    key_id:
+      name: key_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for the API key within the organization
+
+    # New optional timestamp parameters for date filtering
+    start:
+      name: start
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+        examples:
+          - "2023-01-01T00:00:00Z"
+      description: Start timestamp for filtering results (in ISO UTC format, e.g., 2023-01-01T00:00:00Z).
+
+    end:
+      name: end
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+        examples:
+          - "2023-01-01T23:59:59Z"
+      description: End timestamp for filtering results (in ISO UTC format, e.g., 2023-01-01T23:59:59Z).
+
+
+    digest:
+      name: digest
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique digest (checksum) identifier for referencing a container
+
