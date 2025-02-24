@@ -3,7 +3,7 @@ import TabItem from '@theme/TabItem';
 
 # AI API Usecase
 
-![image](https://github.com/user-attachments/assets/bb288911-d353-4376-b7d3-27becc0fe131)
+![image](https://github.com/user-attachments/assets/38d07588-86fb-4e77-bebd-82cc7c072a89)
 
 
 This API example demo the ability to:
