@@ -3,6 +3,9 @@ import TabItem from '@theme/TabItem';
 
 # AI API Usecase
 
+![image](https://github.com/user-attachments/assets/bb288911-d353-4376-b7d3-27becc0fe131)
+
+
 This API example demo the ability to:
     - encode and secure documents into secure content with option of:
         - static DRM
