@@ -1,0 +1,84 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.15 Chrome/132.0.6834.196 Electron/34.2.0 Safari/537.36" version="26.0.15">
+  <diagram name="Page-1" id="WB_dVY47ky3UmgmWKk1m">
+    <mxGraphModel dx="957" dy="513" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#00FFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-1" value="AI RAG" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="296" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-4" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-5" target="pxfDgLxpWLXdr5LQgRIL-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="290" as="sourcePoint" />
+            <mxPoint x="450" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-15" value="API: Locktera Decoder&lt;div&gt;(Only Decode Docs identified&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;by Vector match&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;and has DRM permition to Actor )&amp;nbsp;&lt;/span&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="pxfDgLxpWLXdr5LQgRIL-4">
+          <mxGeometry x="-0.2143" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-5" value="Locktera Secured&lt;div&gt;Docs&amp;nbsp;&lt;/div&gt;" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" vertex="1" parent="1">
+          <mxGeometry x="41" y="295" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-7" value="&lt;div&gt;Original&lt;/div&gt;Docs&lt;div&gt;(these docs will be deleted after&amp;nbsp;&lt;/div&gt;&lt;div&gt;vectorization and dsecuring)&lt;/div&gt;" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="66" width="120" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-8" value="Vector&lt;div&gt;DB&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="460" y="69" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-9" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=block;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-8" target="pxfDgLxpWLXdr5LQgRIL-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="290" as="sourcePoint" />
+            <mxPoint x="450" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-10" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="780" y="110" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-11" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-7" target="pxfDgLxpWLXdr5LQgRIL-8">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="290" as="sourcePoint" />
+            <mxPoint x="450" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-14" value="Chunk/&lt;div&gt;Embed/&lt;/div&gt;&lt;div&gt;Tokenize&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="pxfDgLxpWLXdr5LQgRIL-11">
+          <mxGeometry x="-0.1786" y="6" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-12" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-7" target="pxfDgLxpWLXdr5LQgRIL-5">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="290" as="sourcePoint" />
+            <mxPoint x="450" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-13" value="API: Locktera Encoder&lt;div&gt;(apply Static or Dynamic DRM&lt;/div&gt;&lt;div&gt;/set roles and permissions)&amp;nbsp;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="pxfDgLxpWLXdr5LQgRIL-12">
+          <mxGeometry x="-0.2242" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-18" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-20" target="pxfDgLxpWLXdr5LQgRIL-10">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="660" y="325" as="sourcePoint" />
+            <mxPoint x="638" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-19" value="Prompt&lt;div&gt;/Question&lt;/div&gt;&lt;div&gt;/Response&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="pxfDgLxpWLXdr5LQgRIL-18">
+          <mxGeometry x="-0.1774" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-20" value="API" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="640" y="286" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pxfDgLxpWLXdr5LQgRIL-21" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="pxfDgLxpWLXdr5LQgRIL-1" target="pxfDgLxpWLXdr5LQgRIL-20">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="340" y="320" as="sourcePoint" />
+            <mxPoint x="440" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
